@@ -1,4 +1,5 @@
 import { test, expect } from '../budget-fixtures';
+import { BUDGET_PATHS } from '../budget-api-paths';
 import { expectJsonArray, expectStatusIn } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import { ANNEE_COURANTE, UUID_INEXISTANT, UUID_MALFORME } from '../../../test-data/builders';
@@ -38,7 +39,7 @@ test.describe('API — Budget collaboratif (/api/budget/collaboratif)', () => {
   });
 
   test('un departementId malformé est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/budget/collaboratif/demandes', {
+    const response = await apiContext.get(BUDGET_PATHS.demandes, {
       params: { departementId: UUID_MALFORME },
     });
 
@@ -84,7 +85,7 @@ test.describe('API — Budget collaboratif (/api/budget/collaboratif)', () => {
   });
 
   test('la soumission groupée exige departementId et annee', async ({ apiContext }) => {
-    const response = await apiContext.post('/api/budget/collaboratif/demandes/soumettre', {
+    const response = await apiContext.post(BUDGET_PATHS.demandesSoumettre, {
       params: { annee: ANNEE_COURANTE },
     });
 
@@ -103,7 +104,7 @@ test.describe('API — Budget collaboratif (/api/budget/collaboratif)', () => {
 
   test('rejeter une demande exige un motif', async ({ apiContext }) => {
     const response = await apiContext.post(
-      `/api/budget/collaboratif/demandes/${UUID_INEXISTANT}/rejeter`,
+      BUDGET_PATHS.demandeRejeter(UUID_INEXISTANT),
       { params: { userId: UUID_INEXISTANT } },
     );
 
@@ -198,7 +199,7 @@ test.describe('API — Budget collaboratif (/api/budget/collaboratif)', () => {
   });
 
   test('la consolidation exige les trois paramètres', async ({ apiContext }) => {
-    const response = await apiContext.post('/api/budget/collaboratif/consolider', {
+    const response = await apiContext.post(BUDGET_PATHS.consolider, {
       params: { annee: ANNEE_COURANTE },
     });
 

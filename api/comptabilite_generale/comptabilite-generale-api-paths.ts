@@ -65,6 +65,7 @@ export const COMPTA_PATHS = {
   immoInitAmortir: `${BASE_IMMO}/init_amortir`,
   immoDecision: (id: string) => `${BASE_IMMO}/validate_or_reject/${id}`,
 
+  clotureBase: BASE_CLOTURE,
   clotureExercice: (annee: number) => `${BASE_CLOTURE}/${annee}`,
   clotureReevaluer: `${BASE_CLOTURE}/reevaluer`,
 

@@ -1,4 +1,5 @@
 import { test, expect } from '../comptabilite-analytique-fixtures';
+import { ANALYTIQUE_PATHS } from '../comptabilite-analytique-api-paths';
 import { expectJsonArray, expectStatusIn } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import {
@@ -71,7 +72,7 @@ test.describe('API — Analytique : axes et sections', () => {
 
   test('le paramètre actif est obligatoire', async ({ apiContext }) => {
     const response = await apiContext.put(
-      `/api/comptabilite/analytique/axes/${UUID_INEXISTANT}/statut`,
+      ANALYTIQUE_PATHS.axeStatut(UUID_INEXISTANT),
     );
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'statut sans paramètre actif');
@@ -116,7 +117,7 @@ test.describe('API — Analytique : axes et sections', () => {
 
   test('un axeId malformé est rejeté', async ({ apiContext }) => {
     const response = await apiContext.get(
-      `/api/comptabilite/analytique/axes/${UUID_MALFORME}/sections`,
+      ANALYTIQUE_PATHS.axeSections(UUID_MALFORME),
     );
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'axeId malformé');
@@ -181,7 +182,7 @@ test.describe('API — Analytique : budgets par section', () => {
   });
 
   test('une année non numérique est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/analytique/budgets/annee');
+    const response = await apiContext.get(`${ANALYTIQUE_PATHS.budgetsBase}/annee`);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'année non numérique');
   });
@@ -275,7 +276,7 @@ test.describe('API — Analytique : reporting', () => {
   });
 
   test('le grand livre exige ses deux bornes', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/analytique/reporting/grand-livre', {
+    const response = await apiContext.get(ANALYTIQUE_PATHS.grandLivre, {
       params: { debut: debutAnnee(ANNEE_COURANTE) },
     });
 

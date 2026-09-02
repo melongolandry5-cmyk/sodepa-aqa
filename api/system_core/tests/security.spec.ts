@@ -1,5 +1,10 @@
 import { test, expect } from '../system-core-fixtures';
-import { ALL_ENDPOINTS, PROTECTED_ENDPOINTS } from '../system-core-api-paths';
+import {
+  ALL_ENDPOINTS,
+  PROTECTED_ENDPOINTS,
+  ROUTE_INEXISTANTE,
+  ROUTE_PROTEGEE_TEMOIN,
+} from '../system-core-api-paths';
 import { probe, UNAUTHENTICATED_STATUSES } from '../../../helpers/http';
 import { expectStatusIn } from '../../../helpers/assertions';
 
@@ -30,7 +35,7 @@ test.describe('API — Sécurité', () => {
   }
 
   test('un jeton malformé est rejeté', async ({ anonContext }) => {
-    const response = await anonContext.get('/api/financement', {
+    const response = await anonContext.get(ROUTE_PROTEGEE_TEMOIN, {
       headers: { Authorization: 'Bearer pas-un-jwt' },
     });
 
@@ -39,7 +44,7 @@ test.describe('API — Sécurité', () => {
 
   test('un jeton tronqué est rejeté', async ({ anonContext, session }) => {
     const tronque = session.access_token.slice(0, -10);
-    const response = await anonContext.get('/api/financement', {
+    const response = await anonContext.get(ROUTE_PROTEGEE_TEMOIN, {
       headers: { Authorization: `Bearer ${tronque}` },
     });
 
@@ -50,7 +55,7 @@ test.describe('API — Sécurité', () => {
     anonContext,
     session,
   }) => {
-    const response = await anonContext.get('/api/financement', {
+    const response = await anonContext.get(ROUTE_PROTEGEE_TEMOIN, {
       headers: { Authorization: session.access_token },
     });
 
@@ -71,7 +76,7 @@ test.describe('API — Sécurité', () => {
   });
 
   test('une route inexistante renvoie 404 et non 403', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/route-qui-nexiste-pas');
+    const response = await apiContext.get(ROUTE_INEXISTANTE);
 
     expect(response.status()).toBe(404);
   });

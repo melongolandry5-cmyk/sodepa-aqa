@@ -1,4 +1,6 @@
 import { test, expect } from '../financement-fixtures';
+import { simulationValide } from '../financement-payload-builder';
+import { FINANCEMENT_PATHS } from '../financement-api-paths';
 import {
   expectHasFields,
   expectJsonArray,
@@ -10,7 +12,6 @@ import {
   UUID_INEXISTANT,
   UUID_MALFORME,
   isoDate,
-  simulationValide,
   today,
   unique,
 } from '../../../test-data/builders';
@@ -83,7 +84,7 @@ test.describe('API — Financement : recherche et consultation', () => {
   });
 
   test('un banqueId malformé est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/financement', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.base, {
       params: { banqueId: UUID_MALFORME },
     });
 
@@ -188,7 +189,7 @@ test.describe('API — Financement : simulation d’amortissement', () => {
   });
 
   test('le paramètre capital est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/financement/simuler', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.simuler, {
       params: { tauxNominal: 5, dureeMois: 12, periodicite: 'MENSUELLE', dateEffet: today() },
     });
 
@@ -196,7 +197,7 @@ test.describe('API — Financement : simulation d’amortissement', () => {
   });
 
   test('le paramètre periodicite est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/financement/simuler', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.simuler, {
       params: { capital: 1000, tauxNominal: 5, dureeMois: 12, dateEffet: today() },
     });
 
@@ -204,7 +205,7 @@ test.describe('API — Financement : simulation d’amortissement', () => {
   });
 
   test('le paramètre dateEffet est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/financement/simuler', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.simuler, {
       params: { capital: 1000, tauxNominal: 5, dureeMois: 12, periodicite: 'MENSUELLE' },
     });
 
@@ -212,7 +213,7 @@ test.describe('API — Financement : simulation d’amortissement', () => {
   });
 
   test('une date au mauvais format est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/financement/simuler', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.simuler, {
       params: {
         capital: 1000,
         tauxNominal: 5,
@@ -226,7 +227,7 @@ test.describe('API — Financement : simulation d’amortissement', () => {
   });
 
   test('une durée non numérique est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/financement/simuler', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.simuler, {
       params: {
         capital: 1000,
         tauxNominal: 5,
@@ -242,7 +243,7 @@ test.describe('API — Financement : simulation d’amortissement', () => {
   test('une périodicité inconnue est refusée ou retombe sur le calcul mensuel', async ({
     apiContext,
   }) => {
-    const response = await apiContext.get('/api/financement/simuler', {
+    const response = await apiContext.get(FINANCEMENT_PATHS.simuler, {
       params: {
         capital: 1000,
         tauxNominal: 5,
@@ -354,7 +355,7 @@ test.describe('API — Financement : création et règlements', () => {
 
   test('payer une échéance exige un userId', async ({ apiContext }) => {
     const response = await apiContext.post(
-      `/api/financement/echeances/${UUID_INEXISTANT}/payer`,
+      FINANCEMENT_PATHS.payerEcheance(UUID_INEXISTANT),
     );
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'paiement sans userId');

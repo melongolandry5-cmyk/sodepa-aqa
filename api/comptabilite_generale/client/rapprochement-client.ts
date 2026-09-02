@@ -59,7 +59,7 @@ export class ClotureClient extends BaseApiClient {
 
   /** Variante non typée, pour tester le rejet d'une année non numérique. */
   async cloturerChemin(segment: string, expectStatus?: number[]) {
-    return this.post(`/api/comptabilite/cloture/${segment}`, { expectStatus });
+    return this.post(`${COMPTA_PATHS.clotureBase}/${segment}`, { expectStatus });
   }
 
   async reevaluerDevises(body: Record<string, unknown>, expectStatus?: number[]) {

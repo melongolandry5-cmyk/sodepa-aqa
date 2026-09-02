@@ -1,4 +1,5 @@
 import { test, expect } from '../authentication-fixtures';
+import { AUTH_PATHS } from '../authentication-api-paths';
 import { users } from '../../../test-data/users';
 import { env } from '../../../helpers/env';
 import { expectHasFields, expectStatusIn } from '../../../helpers/assertions';
@@ -43,7 +44,7 @@ test.describe('API — Authentification (/api/auth)', () => {
   });
 
   test('un corps de connexion incomplet est rejeté en 400', async ({ anonContext }) => {
-    const response = await anonContext.post('/api/auth/login', {
+    const response = await anonContext.post(AUTH_PATHS.login, {
       data: { username: users.admin.username },
     });
 
@@ -51,7 +52,7 @@ test.describe('API — Authentification (/api/auth)', () => {
   });
 
   test('un corps de connexion non JSON est rejeté', async ({ anonContext }) => {
-    const response = await anonContext.post('/api/auth/login', {
+    const response = await anonContext.post(AUTH_PATHS.login, {
       data: 'ceci-nest-pas-du-json',
       headers: { 'Content-Type': 'text/plain' },
     });
@@ -68,7 +69,7 @@ test.describe('API — Authentification (/api/auth)', () => {
   });
 
   test('un refresh token invalide est rejeté', async ({ anonContext }) => {
-    const response = await anonContext.post('/api/auth/refresh', {
+    const response = await anonContext.post(AUTH_PATHS.refresh, {
       data: { refreshToken: 'jeton-bidon' },
     });
 
@@ -76,7 +77,7 @@ test.describe('API — Authentification (/api/auth)', () => {
   });
 
   test('un refresh token vide déclenche une erreur de validation', async ({ anonContext }) => {
-    const response = await anonContext.post('/api/auth/refresh', { data: { refreshToken: '' } });
+    const response = await anonContext.post(AUTH_PATHS.refresh, { data: { refreshToken: '' } });
 
     await expectStatusIn(response, [...BAD_REQUEST_STATUSES, 401, 403], 'refresh vide');
   });
@@ -86,7 +87,7 @@ test.describe('API — Authentification (/api/auth)', () => {
 
     await anonAuthClient.logout(token.refresh_token);
 
-    const apresLogout = await anonContext.post('/api/auth/refresh', {
+    const apresLogout = await anonContext.post(AUTH_PATHS.refresh, {
       data: { refreshToken: token.refresh_token },
     });
     expect(

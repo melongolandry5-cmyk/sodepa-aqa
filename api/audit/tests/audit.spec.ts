@@ -1,4 +1,5 @@
 import { test, expect } from '../audit-fixtures';
+import { AUDIT_PATHS } from '../audit-api-paths';
 import { expectJsonArray, expectStatusIn } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES } from '../../../helpers/http';
 import { UUID_INEXISTANT, UUID_MALFORME } from '../../../test-data/builders';
@@ -43,7 +44,7 @@ test.describe('API — Audit (/api/auth/audit)', () => {
   });
 
   test('une limite non numérique est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/auth/audit/clickhouse/transactions', {
+    const response = await apiContext.get(AUDIT_PATHS.clickhouseTransactions, {
       params: { limit: 'beaucoup' },
     });
 
@@ -73,7 +74,7 @@ test.describe('API — Audit (/api/auth/audit)', () => {
   });
 
   test('le paramètre query est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/auth/audit/analytics');
+    const response = await apiContext.get(AUDIT_PATHS.analytics);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'analytics sans query');
   });
@@ -89,7 +90,7 @@ test.describe('API — Piste d’audit métier (/api/audit/logs)', () => {
   });
 
   test('entiteNom est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/audit/logs', {
+    const response = await apiContext.get(AUDIT_PATHS.trailLogs, {
       params: { entiteId: UUID_INEXISTANT },
     });
 
@@ -97,7 +98,7 @@ test.describe('API — Piste d’audit métier (/api/audit/logs)', () => {
   });
 
   test('entiteId est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/audit/logs', {
+    const response = await apiContext.get(AUDIT_PATHS.trailLogs, {
       params: { entiteNom: 'BudgetPlan' },
     });
 
@@ -105,7 +106,7 @@ test.describe('API — Piste d’audit métier (/api/audit/logs)', () => {
   });
 
   test('un entiteId non UUID est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/audit/logs', {
+    const response = await apiContext.get(AUDIT_PATHS.trailLogs, {
       params: { entiteNom: 'BudgetPlan', entiteId: UUID_MALFORME },
     });
 

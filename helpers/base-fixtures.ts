@@ -3,6 +3,7 @@ import { env } from './env';
 import { logger } from './logger';
 import { users, TestUser } from '../test-data/users';
 import { TokenResponse } from '../api/types/common';
+import { AUTH_PATHS } from '../api/authentication/authentication-api-paths';
 
 /** Fixtures partagées par worker : le jeton n'est obtenu qu'une fois. */
 export interface BaseWorkerFixtures {
@@ -24,7 +25,7 @@ export async function login(user: TestUser): Promise<TokenResponse> {
     timeout: env.apiTimeoutMs,
   });
   try {
-    const response = await context.post('/api/auth/login', {
+    const response = await context.post(AUTH_PATHS.login, {
       data: { username: user.username, password: user.password },
     });
     if (!response.ok()) {

@@ -1,4 +1,5 @@
 import { test, expect } from '../user-management-fixtures';
+import { USER_PATHS } from '../user-management-api-paths';
 import { expectStatusIn, expectValidPage } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import { UUID_INEXISTANT, UUID_MALFORME, decisionValide, unique } from '../../../test-data/builders';
@@ -204,7 +205,7 @@ test.describe('API — Utilisateurs : mise à jour', () => {
   test('la création d’utilisateur refuse un corps JSON (multipart attendu)', async ({
     apiContext,
   }) => {
-    const response = await apiContext.post('/api/v1/users/init_create', {
+    const response = await apiContext.post(USER_PATHS.initCreate, {
       data: { username: 'x', nom: 'x', prenom: 'x', email: 'a@b.c' },
     });
 

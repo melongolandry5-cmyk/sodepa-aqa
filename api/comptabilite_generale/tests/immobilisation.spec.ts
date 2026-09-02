@@ -1,4 +1,6 @@
 import { test, expect } from '../comptabilite-generale-fixtures';
+import { immobilisationValide } from '../helpers/compta-payload-helper';
+import { COMPTA_PATHS } from '../comptabilite-generale-api-paths';
 import { expectJsonArray, expectStatusIn, expectValidPage } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import {
@@ -6,7 +8,6 @@ import {
   UUID_INEXISTANT,
   UUID_MALFORME,
   decisionValide,
-  immobilisationValide,
   isoDate,
   unique,
 } from '../../../test-data/builders';
@@ -61,7 +62,7 @@ test.describe('API — Immobilisations : recherche et consultation', () => {
   });
 
   test('un statut hors énumération est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/v1/immobilisations', {
+    const response = await apiContext.get(COMPTA_PATHS.immoBase, {
       params: { statut: 'HORS_SERVICE' },
     });
 

@@ -2,7 +2,7 @@ import { EndpointDescriptor } from '../types/endpoint';
 import { AUTH_ENDPOINTS } from '../authentication/authentication-api-paths';
 import { AUDIT_ENDPOINTS } from '../audit/audit-api-paths';
 import { BUDGET_ENDPOINTS } from '../budget/budget-api-paths';
-import { FINANCEMENT_ENDPOINTS } from '../financement/financement-api-paths';
+import { FINANCEMENT_ENDPOINTS, FINANCEMENT_PATHS } from '../financement/financement-api-paths';
 import { TRESORERIE_ENDPOINTS } from '../tresorerie/tresorerie-api-paths';
 import { ANALYTIQUE_ENDPOINTS } from '../comptabilite_analytique/comptabilite-analytique-api-paths';
 import { COMPTA_ENDPOINTS } from '../comptabilite_generale/comptabilite-generale-api-paths';
@@ -36,3 +36,15 @@ export const PUBLIC_ENDPOINTS = ALL_ENDPOINTS.filter((e) => e.public);
 export const READ_ONLY_ENDPOINTS = ALL_ENDPOINTS.filter(
   (e) => e.method === 'get' && !e.destructive,
 );
+
+/**
+ * Route protégée témoin, empruntée au registre du module Financement : les
+ * tests de forme du jeton ont besoin d'une route quelconque mais réelle.
+ */
+export const ROUTE_PROTEGEE_TEMOIN = FINANCEMENT_PATHS.base;
+
+/**
+ * Seule URL du dépôt volontairement absente de tout registre : elle sert à
+ * vérifier qu'une route inconnue renvoie 404 et non 403.
+ */
+export const ROUTE_INEXISTANTE = '/api/route-qui-nexiste-pas';

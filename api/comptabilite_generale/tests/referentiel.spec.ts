@@ -1,13 +1,12 @@
 import { test, expect } from '../comptabilite-generale-fixtures';
+import { compteValide, tiersValide } from '../helpers/compta-payload-helper';
 import { expectJsonArray, expectStatusIn, expectValidPage } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import { env } from '../../../helpers/env';
 import {
   UUID_INEXISTANT,
   UUID_MALFORME,
-  compteValide,
   decisionValide,
-  tiersValide,
   unique,
 } from '../../../test-data/builders';
 

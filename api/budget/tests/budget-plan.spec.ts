@@ -1,11 +1,12 @@
 import { test, expect } from '../budget-fixtures';
+import { planBudgetaireValide } from '../budget-payload-builder';
+import { BUDGET_PATHS } from '../budget-api-paths';
 import { expectStatusIn, expectValidPage } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import {
   ANNEE_COURANTE,
   UUID_INEXISTANT,
   UUID_MALFORME,
-  planBudgetaireValide,
   unique,
 } from '../../../test-data/builders';
 
@@ -66,7 +67,7 @@ test.describe('API — Plans budgétaires (/api/budget/plans)', () => {
   });
 
   test('un statut hors énumération est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/budget/plans', {
+    const response = await apiContext.get(BUDGET_PATHS.plans, {
       params: { statut: 'STATUT_INCONNU' },
     });
 
@@ -183,7 +184,7 @@ test.describe('API — Plans budgétaires (/api/budget/plans)', () => {
   });
 
   test('le paramètre userId est obligatoire pour soumettre', async ({ apiContext }) => {
-    const response = await apiContext.post(`/api/budget/plans/${UUID_INEXISTANT}/soumettre`);
+    const response = await apiContext.post(BUDGET_PATHS.planSoumettre(UUID_INEXISTANT));
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'soumettre sans userId');
   });

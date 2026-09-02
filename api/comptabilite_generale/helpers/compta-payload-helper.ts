@@ -1,4 +1,4 @@
-import { today, unique } from '../../../test-data/builders';
+import { isoDate, today, unique } from '../../../test-data/builders';
 
 /**
  * Constructeurs de corps propres au module Comptabilité générale.
@@ -34,6 +34,46 @@ export function releveManuel(banqueId: string, overrides: Record<string, unknown
       { dateTransaction: today(), libelle: 'Virement client', montant: 300_000 },
       { dateTransaction: today(), libelle: 'Frais bancaires', montant: -50_000 },
     ],
+    ...overrides,
+  };
+}
+/** Corps valide de création d'un compte général. */
+export function compteValide(overrides: Record<string, unknown> = {}) {
+  return {
+    code: `9${Date.now().toString().slice(-5)}`,
+    intitule: `Compte ${unique('CPT')}`,
+    niveau: 3,
+    nature: 'CHARGE',
+    isAuxiliaire: false,
+    ...overrides,
+  };
+}
+
+/** Corps valide de création d'un tiers. */
+export function tiersValide(overrides: Record<string, unknown> = {}) {
+  return {
+    code: unique('TRS'),
+    raisonSociale: `Tiers ${unique('')}`,
+    adresse: 'Douala',
+    telephone: '690000000',
+    email: 'tiers.aqa@example.com',
+    typeTiers: 'CLIENT',
+    compteCollectifCode: '411',
+    ...overrides,
+  };
+}
+
+/** Corps valide de création d'une immobilisation. */
+export function immobilisationValide(overrides: Record<string, unknown> = {}) {
+  return {
+    code: unique('IMM'),
+    designation: `Immobilisation ${unique('')}`,
+    valeurOrigine: 5_000_000,
+    dateAcquisition: isoDate(-60),
+    dateMiseEnService: isoDate(-30),
+    modeAmortissement: 'LINEAIRE',
+    dureeUtile: 5,
+    valeurResiduelle: 0,
     ...overrides,
   };
 }

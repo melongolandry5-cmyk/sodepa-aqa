@@ -1,4 +1,5 @@
 import { test, expect } from '../comptabilite-generale-fixtures';
+import { COMPTA_PATHS } from '../comptabilite-generale-api-paths';
 import { expectStatusIn, expectValidPage } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import { env } from '../../../helpers/env';
@@ -59,7 +60,7 @@ test.describe('API — Relevés bancaires : consultation', () => {
   });
 
   test('un banqueId malformé est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/rapprochement/releves', {
+    const response = await apiContext.get(COMPTA_PATHS.releves, {
       params: { banqueId: UUID_MALFORME },
     });
 
@@ -168,7 +169,7 @@ test.describe('API — Relevés bancaires : saisie et synchronisation', () => {
 test.describe('API — Relevés bancaires : rapprochement automatique', () => {
   test('le rapprochement exige un compte de banque', async ({ apiContext }) => {
     const response = await apiContext.post(
-      `/api/comptabilite/rapprochement/${UUID_INEXISTANT}/rapprocher`,
+      COMPTA_PATHS.releveRapprocher(UUID_INEXISTANT),
     );
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'rapprochement sans compte');
@@ -224,7 +225,7 @@ test.describe('API — Clôture d’exercice (/api/comptabilite/cloture)', () =>
   });
 
   test('une année de clôture non numérique est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.post('/api/comptabilite/cloture/exercice');
+    const response = await apiContext.post(`${COMPTA_PATHS.clotureBase}/exercice`);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'clôture année non numérique');
   });

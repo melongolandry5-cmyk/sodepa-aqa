@@ -1,14 +1,14 @@
 import { test, expect } from '../tresorerie-fixtures';
+import { couvertureValide, previsionValide } from '../tresorerie-payload-builder';
+import { TRESORERIE_PATHS } from '../tresorerie-api-paths';
 import { expectStatusIn } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES, NOT_FOUND_STATUSES } from '../../../helpers/http';
 import {
   ANNEE_COURANTE,
   UUID_INEXISTANT,
-  couvertureValide,
   debutAnnee,
   finAnnee,
   isoDate,
-  previsionValide,
   today,
   unique,
 } from '../../../test-data/builders';
@@ -46,7 +46,7 @@ test.describe('API — Trésorerie : prévisions', () => {
   });
 
   test('le paramètre debut est obligatoire', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/previsions', {
+    const response = await apiContext.get(TRESORERIE_PATHS.previsions, {
       params: { fin: finAnnee(ANNEE_COURANTE) },
     });
 
@@ -54,7 +54,7 @@ test.describe('API — Trésorerie : prévisions', () => {
   });
 
   test('une date mal formatée est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/previsions', {
+    const response = await apiContext.get(TRESORERIE_PATHS.previsions, {
       params: { debut: '2025/01/01', fin: finAnnee(ANNEE_COURANTE) },
     });
 
@@ -110,7 +110,7 @@ test.describe('API — Trésorerie : états et simulations', () => {
   });
 
   test('le cash-flow exige les deux bornes', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/cash-flow', {
+    const response = await apiContext.get(TRESORERIE_PATHS.cashFlow, {
       params: { debut: debutAnnee(ANNEE_COURANTE) },
     });
 
@@ -125,7 +125,7 @@ test.describe('API — Trésorerie : états et simulations', () => {
   });
 
   test('le BFR exige une date', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/bfr');
+    const response = await apiContext.get(TRESORERIE_PATHS.bfr);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'bfr sans date');
   });
@@ -143,7 +143,7 @@ test.describe('API — Trésorerie : états et simulations', () => {
   });
 
   test('la simulation what-if exige ses trois paramètres', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/simulations/what-if', {
+    const response = await apiContext.get(TRESORERIE_PATHS.whatIf, {
       params: { croissance: 1.05 },
     });
 
@@ -151,7 +151,7 @@ test.describe('API — Trésorerie : états et simulations', () => {
   });
 
   test('un paramètre non numérique de la simulation est rejeté', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/simulations/what-if', {
+    const response = await apiContext.get(TRESORERIE_PATHS.whatIf, {
       params: { croissance: 'beaucoup', inflation: 1, prixRevient: 1 },
     });
 
@@ -224,7 +224,7 @@ test.describe('API — Couverture de change (/api/tresorerie/change)', () => {
 
   test('l’évaluation exige un cours spot', async ({ apiContext }) => {
     const response = await apiContext.get(
-      `/api/tresorerie/change/couverture/${UUID_INEXISTANT}/evaluer`,
+      TRESORERIE_PATHS.couvertureEvaluer(UUID_INEXISTANT),
     );
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'évaluation sans coursSpot');
@@ -248,7 +248,7 @@ test.describe('API — Rapprochement et arbitrage (/api/tresorerie/rapprochement
   });
 
   test('le matching exige un releveId', async ({ apiContext }) => {
-    const response = await apiContext.post('/api/tresorerie/rapprochement/matching');
+    const response = await apiContext.post(TRESORERIE_PATHS.matching);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'matching sans releveId');
   });
@@ -265,7 +265,7 @@ test.describe('API — Rapprochement et arbitrage (/api/tresorerie/rapprochement
   });
 
   test('l’arbitrage exige ses quatre paramètres', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/tresorerie/rapprochement/arbitrage', {
+    const response = await apiContext.get(TRESORERIE_PATHS.arbitrage, {
       params: { fondsSecurite: 1000 },
     });
 
@@ -281,13 +281,13 @@ test.describe('API — Pilotage stratégique (/api/reporting)', () => {
   });
 
   test('le TFT exige une année', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/reporting/tft');
+    const response = await apiContext.get(TRESORERIE_PATHS.tft);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'tft sans année');
   });
 
   test('une année non numérique est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/reporting/tft', { params: { annee: 'cette' } });
+    const response = await apiContext.get(TRESORERIE_PATHS.tft, { params: { annee: 'cette' } });
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'tft année non numérique');
   });

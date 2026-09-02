@@ -1,4 +1,5 @@
 import { test, expect } from '../comptabilite-generale-fixtures';
+import { COMPTA_PATHS } from '../comptabilite-generale-api-paths';
 import { expectJsonArray, expectStatusIn } from '../../../helpers/assertions';
 import { BAD_REQUEST_STATUSES } from '../../../helpers/http';
 import { ANNEE_COURANTE, debutAnnee, finAnnee, today } from '../../../test-data/builders';
@@ -14,7 +15,7 @@ test.describe('API — Reporting comptable : états périodiques', () => {
   });
 
   test('le livre-journal exige ses deux bornes', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/livre-journal', {
+    const response = await apiContext.get(COMPTA_PATHS.livreJournal, {
       params: { debut: DEBUT },
     });
 
@@ -54,7 +55,7 @@ test.describe('API — Reporting comptable : états périodiques', () => {
   });
 
   test('une date mal formatée est rejetée', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/balance', {
+    const response = await apiContext.get(COMPTA_PATHS.balance, {
       params: { debut: '31-12-2025', fin: FIN },
     });
 
@@ -71,7 +72,7 @@ test.describe('API — Reporting comptable : états de synthèse OHADA', () => {
   });
 
   test('le bilan exige une date', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/bilan');
+    const response = await apiContext.get(COMPTA_PATHS.bilan);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'bilan sans date');
   });
@@ -83,7 +84,7 @@ test.describe('API — Reporting comptable : états de synthèse OHADA', () => {
   });
 
   test('le compte de résultat exige une année', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/compte-resultat');
+    const response = await apiContext.get(COMPTA_PATHS.compteResultat);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'compte de résultat sans année');
   });
@@ -101,7 +102,7 @@ test.describe('API — Reporting comptable : états de synthèse OHADA', () => {
   });
 
   test('la déclaration de TVA exige le mois', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/tva', {
+    const response = await apiContext.get(COMPTA_PATHS.tva, {
       params: { annee: ANNEE_COURANTE },
     });
 
@@ -111,7 +112,7 @@ test.describe('API — Reporting comptable : états de synthèse OHADA', () => {
   test('un mois hors bornes est refusé ou renvoie une déclaration vide', async ({
     apiContext,
   }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/tva', {
+    const response = await apiContext.get(COMPTA_PATHS.tva, {
       params: { annee: ANNEE_COURANTE, mois: 13 },
     });
 
@@ -125,7 +126,7 @@ test.describe('API — Reporting comptable : états de synthèse OHADA', () => {
   });
 
   test('le FEC exige une année', async ({ apiContext }) => {
-    const response = await apiContext.get('/api/comptabilite/reporting/fec');
+    const response = await apiContext.get(COMPTA_PATHS.fec);
 
     await expectStatusIn(response, BAD_REQUEST_STATUSES, 'fec sans année');
   });

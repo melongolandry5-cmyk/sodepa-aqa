@@ -42,6 +42,8 @@ export const env = {
    * garde-fou se met en skip et le reste de la suite tourne normalement.
    */
   backendSourcePath: resolvePath(process.env.BACKEND_SOURCE_PATH),
+  /** Journalisation verbeuse du socle (helpers/logger.ts). */
+  debug: optional('DEBUG_AQA', 'false') === 'true',
   isCI: !!process.env.CI,
   users: {
     admin: {
