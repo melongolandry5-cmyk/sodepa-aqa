@@ -18,6 +18,7 @@
     "squash:dry": "node scripts/squash-sync-cases.mjs --dry-run",
     "squash:plan": "node scripts/squash-sync-cases.mjs --out squash-plan.json",
     "squash:sync": "node scripts/squash-sync-cases.mjs",
+    "squash:update": "node scripts/squash-sync-cases.mjs --update",
     "squash:push": "node scripts/squash-push-results.mjs",
     "squash:push:dry": "node scripts/squash-push-results.mjs --dry-run",
     "squash:push:check": "node scripts/squash-push-results.mjs --check",

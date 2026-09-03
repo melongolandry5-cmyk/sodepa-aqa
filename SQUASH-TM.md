@@ -255,3 +255,57 @@ npm run squash:push         # publie
 La source est `test-results/results.json`, produit par le reporter `json`. Un
 fichier issu d'un `playwright test --list` ne contient aucune issue : le script
 le détecte et refuse de publier plutôt que de remonter des résultats vides.
+
+---
+
+## 9. Scénarios rédigés : étapes, préconditions, résultats attendus
+
+Un cas de test se lit à deux endroits — dans Allure après l'exécution, dans
+Squash comme spécification. Les deux doivent raconter la même chose, donc la
+déclaration est **unique**, dans le test, et lue deux fois.
+
+`helpers/scenario.ts` fournit deux primitives :
+
+```ts
+await contexte({
+  preconditions: ['Le compte administrateur existe dans le realm Keycloak'],
+  configuration: ['La déconnexion exige un jeton : appelée avec l’access_token'],
+});
+
+const token = await etape(
+  'Ouvrir une session',                                    // ce que fait l'utilisateur
+  'La connexion aboutit et fournit un refresh_token',      // ce qu'on attend du système
+  () => anonAuthClient.login(users.admin.username, users.admin.password),
+);
+```
+
+`etape` propage la valeur renvoyée, pour enchaîner sans variable intermédiaire.
+
+### Ce que cela produit
+
+| Destination | Rendu |
+| ----------- | ----- |
+| Allure | Les préconditions en description du cas ; chaque action devient une étape, avec le résultat attendu en sous-étape visible sans rien déplier |
+| Squash | Les préconditions et la configuration en prérequis ; chaque action devient une étape avec son résultat attendu |
+
+Le résultat attendu est émis **avant** l'exécution du corps : c'est en cas
+d'échec qu'on veut lire ce qui était visé à côté de ce qui s'est produit.
+
+### Contrainte de forme
+
+Les libellés doivent rester des **chaînes littérales**. Le catalogue Squash est
+bâti depuis `playwright test --list`, qui n'exécute rien : la lecture est
+textuelle (`scripts/scenario-parse.mjs`). Une variable ne dirait rien au lecteur
+du cas dans Squash.
+
+### Mettre à jour les cas déjà créés
+
+`squash:sync` ne crée que les cas absents. Un cas créé avant que son scénario ne
+soit rédigé garderait donc indéfiniment les étapes déduites du code :
+
+```powershell
+npm run squash:update      # rafraîchit étapes et prérequis des cas existants
+```
+
+La mise à jour remplace les étapes (les anciennes sont supprimées, les nouvelles
+publiées dans l'ordre) et réécrit prérequis et description.

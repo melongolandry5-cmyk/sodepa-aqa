@@ -17,6 +17,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { scenarioSteps, scenarioContext } from './scenario-parse.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -602,6 +603,20 @@ export function deriveSteps(body, { mode = 'derived' } = {}) {
     };
   }
 
+  // Un scenario redige via helpers/scenario.ts prime : c'est la seule source
+  // qui parle metier plutot que code.
+  const redigees = scenarioSteps(body);
+  if (redigees.length) {
+    return {
+      steps: redigees.map((e) => ({
+        action: para(e.action),
+        expected_result: e.expected_result ? para(e.expected_result) : '',
+      })),
+      skips,
+      source: 'scenario redige',
+    };
+  }
+
   const labels = explicitSteps(body);
   if (labels.length) {
     return {
@@ -638,8 +653,19 @@ export function deriveSteps(body, { mode = 'derived' } = {}) {
 }
 
 /** Prerequis : conditions de skip + commande pour rejouer le test seul. */
-export function buildPrerequisite(t, skips) {
+export function buildPrerequisite(t, skips, body) {
   const parts = [];
+  const { preconditions, configuration } = scenarioContext(body);
+  if (preconditions.length) {
+    parts.push('<p><strong>Preconditions :</strong></p><ul>');
+    parts.push(preconditions.map((x) => '<li>' + htmlEscape(x) + '</li>').join(''));
+    parts.push('</ul>');
+  }
+  if (configuration.length) {
+    parts.push('<p><strong>Configuration :</strong></p><ul>');
+    parts.push(configuration.map((x) => '<li>' + htmlEscape(x) + '</li>').join(''));
+    parts.push('</ul>');
+  }
   if (skips.length) {
     parts.push('<p><strong>Conditions d’exclusion declarees dans le test :</strong></p>');
     parts.push(codeBlock(skips.join('\n')));
@@ -769,4 +795,34 @@ export async function indexTestCasesByName(projetId) {
     if (!index.has(cle)) index.set(cle, { id: c.id, reference: c.reference || '' });
   }
   return index;
+}
+
+/**
+ * Remplace le contenu redactionnel d'un cas existant.
+ *
+ * La synchronisation ne cree que les cas absents : sans cette mise a jour, un
+ * cas cree avant que son scenario ne soit redige garderait indefiniment les
+ * etapes deduites du code.
+ *
+ * Les etapes ne se modifient pas en place : on supprime les anciennes puis on
+ * publie les nouvelles, dans l'ordre.
+ */
+export async function updateTestCaseContent(id, { description, prerequisite, steps }) {
+  await api('PATCH', `/test-cases/${id}`, {
+    _type: 'test-case',
+    description,
+    prerequisite,
+  });
+
+  const existantes = await apiAll(`/test-cases/${id}/steps`, 'steps');
+  for (const e of existantes) await api('DELETE', `/test-steps/${e.id}`);
+
+  for (const s of steps) {
+    await api('POST', `/test-cases/${id}/steps`, {
+      _type: 'action-step',
+      action: s.action,
+      expected_result: s.expected_result || '',
+    });
+  }
+  return { supprimees: existantes.length, ajoutees: steps.length };
 }

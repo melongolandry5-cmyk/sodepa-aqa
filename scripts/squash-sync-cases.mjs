@@ -57,6 +57,7 @@ import {
   deriveSteps,
   buildPrerequisite,
   buildDescription,
+  updateTestCaseContent,
   automatedReference,
 } from './squash-lib.mjs';
 
@@ -72,6 +73,8 @@ const MODULE = flag('--module');
 const GREP = flag('--grep');
 const FROM = flag('--from');
 const OUT = flag('--out');
+// Rafraichit le contenu redactionnel des cas deja presents (etapes, prerequis).
+const UPDATE = argv.includes('--update');
 const LIMIT = flag('--limit') ? Number(flag('--limit')) : 0;
 const STEP_MODE = argv.includes('--raw-steps') ? 'raw' : 'derived';
 
@@ -116,7 +119,7 @@ function buildPayload(t, parentFolder) {
     importance: CFG.importance,
     status: CFG.status,
     description: buildDescription(t, source),
-    prerequisite: buildPrerequisite(t, skips),
+    prerequisite: buildPrerequisite(t, skips, body),
     steps: steps.map((s) => ({
       _type: 'action-step',
       action: s.action,
@@ -215,6 +218,7 @@ async function main() {
 
   let createdCases = 0;
   let existingCases = 0;
+  let updatedCases = 0;
   let failed = 0;
   let automationOk = CFG.automationFields !== 'off';
 
@@ -247,6 +251,18 @@ async function main() {
         const deja = present.get('ref:' + ref) || present.get('nom:' + nom);
         if (deja) {
           existingCases++;
+          if (!UPDATE || DRY_RUN) continue;
+          try {
+            const base = buildPayload(t, specFolder);
+            const bilan = await updateTestCaseContent(deja.id, base);
+            updatedCases++;
+            console.log(
+              `      ~ #${deja.id} ${ref}  ${nom.slice(0, 70)} (${bilan.ajoutees} etape(s))`
+            );
+          } catch (e) {
+            failed++;
+            console.log(`      x MAJ ECHOUEE ${ref} -> ${String(e.message).slice(0, 160)}`);
+          }
           continue;
         }
 
@@ -295,7 +311,9 @@ async function main() {
 
   console.log('\n--------------------------------------------------');
   console.log(`  ${createdCases} cas ${DRY_RUN ? 'a creer' : 'cree(s)'}`);
-  console.log(`  ${existingCases} deja present(s), ignore(s)`);
+  console.log(
+    `  ${existingCases} deja present(s)` + (UPDATE ? `, dont ${updatedCases} mis a jour` : ', ignore(s)')
+  );
   if (failed) console.log(`  ${failed} en echec`);
   if (!DRY_RUN && !automationOk && CFG.automationFields !== 'off') {
     console.log(
