@@ -40,6 +40,10 @@ export default defineConfig({
       name: 'api',
       testDir: './api',
       testMatch: '**/tests/*.spec.ts',
+      // L'environnement limite /api/auth a une dizaine d'appels par minute.
+      // `reprendreSur429` patiente jusqu'a 95 s par appel : le timeout doit
+      // couvrir une connexion et un appel metier tous deux ralentis.
+      timeout: 240_000,
       use: { baseURL: env.apiBaseUrl },
     },
     {

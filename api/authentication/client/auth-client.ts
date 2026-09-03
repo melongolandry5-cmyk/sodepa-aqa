@@ -32,8 +32,18 @@ export class AuthClient extends BaseApiClient {
     return this.post(AUTH_PATHS.refresh, { data: { refreshToken }, expectStatus });
   }
 
-  async logout(refreshToken: string): Promise<void> {
-    await this.post(AUTH_PATHS.logout, { data: { refreshToken } });
+  /**
+   * Deconnexion.
+   *
+   * L'endpoint exige un jeton : sans en-tete Authorization il repond 403.
+   * `accessToken` sert a fermer la session que l'on vient d'ouvrir plutot que
+   * celle du client courant.
+   */
+  async logout(refreshToken: string, accessToken?: string): Promise<void> {
+    await this.post(AUTH_PATHS.logout, {
+      data: { refreshToken },
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
   }
 
   async listSessions(): Promise<unknown[]> {

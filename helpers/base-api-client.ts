@@ -1,5 +1,6 @@
 import { APIRequestContext, APIResponse, expect, test } from '@playwright/test';
 import { attacher, corpsLisible, masquer } from './report';
+import { attendUn429, reprendreSur429 } from './rate-limit';
 
 /** Options d'un appel HTTP. */
 export interface CallOptions {
@@ -63,14 +64,18 @@ export abstract class BaseApiClient {
       });
 
       const envoi = { params: options.params, headers: options.headers };
-      const response =
+      const executer = () =>
         methode === 'get'
-          ? await this.request.get(path, envoi)
+          ? this.request.get(path, envoi)
           : methode === 'delete'
-            ? await this.request.delete(path, envoi)
+            ? this.request.delete(path, envoi)
             : methode === 'put'
-              ? await this.request.put(path, { ...envoi, data: options.data as never })
-              : await this.request.post(path, { ...envoi, data: options.data as never });
+              ? this.request.put(path, { ...envoi, data: options.data as never })
+              : this.request.post(path, { ...envoi, data: options.data as never });
+
+      const response = attendUn429(options.expectStatus)
+        ? await executer()
+        : await reprendreSur429(executer, `${methode.toUpperCase()} ${path}`);
 
       await attacher('reponse', {
         statut: response.status(),

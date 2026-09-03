@@ -30,10 +30,11 @@ export const AUTH_ENDPOINTS: EndpointDescriptor[] = [
     sampleBody: { refreshToken: 'x' },
   },
   {
+    // Contrairement a login et refresh, la deconnexion exige un jeton : appelee
+    // sans en-tete Authorization, elle repond 403 (verifie sur l'environnement).
     method: 'post',
     path: AUTH_PATHS.logout,
     domain: 'authentication',
-    public: true,
     sampleBody: { refreshToken: 'x' },
   },
   { method: 'get', path: AUTH_PATHS.sessions, domain: 'authentication' },

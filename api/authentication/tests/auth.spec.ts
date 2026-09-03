@@ -85,7 +85,7 @@ test.describe('API — Authentification (/api/auth)', () => {
   test('la déconnexion invalide le refresh token', async ({ anonAuthClient, anonContext }) => {
     const token = await anonAuthClient.login(users.admin.username, users.admin.password);
 
-    await anonAuthClient.logout(token.refresh_token);
+    await anonAuthClient.logout(token.refresh_token, token.access_token);
 
     const apresLogout = await anonContext.post(AUTH_PATHS.refresh, {
       data: { refreshToken: token.refresh_token },

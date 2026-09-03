@@ -2,6 +2,7 @@ import { test as base, request as playwrightRequest, APIRequestContext } from '@
 import { env } from './env';
 import { logger } from './logger';
 import { defaultApiHeaders } from './http';
+import { reprendreSur429 } from './rate-limit';
 import { users, TestUser } from '../test-data/users';
 import { TokenResponse } from '../api/types/common';
 import { AUTH_PATHS } from '../api/authentication/authentication-api-paths';
@@ -27,9 +28,13 @@ export async function login(user: TestUser): Promise<TokenResponse> {
     extraHTTPHeaders: defaultApiHeaders(),
   });
   try {
-    const response = await context.post(AUTH_PATHS.login, {
-      data: { username: user.username, password: user.password },
-    });
+    const response = await reprendreSur429(
+      () =>
+        context.post(AUTH_PATHS.login, {
+          data: { username: user.username, password: user.password },
+        }),
+      `connexion de ${user.username}`,
+    );
     if (!response.ok()) {
       throw new Error(
         `Connexion impossible pour "${user.username}" (${response.status()}) : ${await response.text()}`,
