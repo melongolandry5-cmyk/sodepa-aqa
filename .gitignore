@@ -12,3 +12,7 @@ allure-results/
 allure-report/
 .allure/
 _kiwi-merge.zip
+
+# Squash TM
+squash-plan.json
+squash-renumber-plan.json

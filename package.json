@@ -19,7 +19,12 @@
     "kiwi:push": "node scripts/kiwi-report.mjs",
     "kiwi:dry": "node scripts/kiwi-report.mjs --dry-run",
     "kiwi:check": "node scripts/kiwi-report.mjs --check",
-    "kiwi:sync": "node scripts/kiwi-sync-cases.mjs"
+    "kiwi:sync": "node scripts/kiwi-sync-cases.mjs",
+    "squash:dry": "node scripts/squash-sync-cases.mjs --dry-run",
+    "squash:plan": "node scripts/squash-sync-cases.mjs --out squash-plan.json",
+    "squash:sync": "node scripts/squash-sync-cases.mjs",
+    "squash:renumber:dry": "node scripts/squash-renumber-ids.mjs",
+    "squash:renumber": "node scripts/squash-renumber-ids.mjs --apply"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
