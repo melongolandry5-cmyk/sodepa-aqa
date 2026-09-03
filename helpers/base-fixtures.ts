@@ -1,6 +1,7 @@
 import { test as base, request as playwrightRequest, APIRequestContext } from '@playwright/test';
 import { env } from './env';
 import { logger } from './logger';
+import { defaultApiHeaders } from './http';
 import { users, TestUser } from '../test-data/users';
 import { TokenResponse } from '../api/types/common';
 import { AUTH_PATHS } from '../api/authentication/authentication-api-paths';
@@ -23,6 +24,7 @@ export async function login(user: TestUser): Promise<TokenResponse> {
   const context = await playwrightRequest.newContext({
     baseURL: env.apiBaseUrl,
     timeout: env.apiTimeoutMs,
+    extraHTTPHeaders: defaultApiHeaders(),
   });
   try {
     const response = await context.post(AUTH_PATHS.login, {
@@ -59,9 +61,8 @@ export const baseTest = base.extend<BaseTestFixtures, BaseWorkerFixtures>({
       baseURL: env.apiBaseUrl,
       timeout: env.apiTimeoutMs,
       extraHTTPHeaders: {
+        ...defaultApiHeaders(),
         Authorization: `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
       },
     });
     await use(context);
@@ -72,7 +73,7 @@ export const baseTest = base.extend<BaseTestFixtures, BaseWorkerFixtures>({
     const context = await playwrightRequest.newContext({
       baseURL: env.apiBaseUrl,
       timeout: env.apiTimeoutMs,
-      extraHTTPHeaders: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      extraHTTPHeaders: defaultApiHeaders(),
     });
     await use(context);
     await context.dispose();

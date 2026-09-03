@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { env } from './helpers/env';
+import { defaultApiHeaders } from './helpers/http';
 
 /**
  * Configuration Playwright du depot AQA Sodepa.
@@ -20,6 +21,10 @@ export default defineConfig({
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
+    // consomme par scripts/kiwi-report.mjs (push vers Kiwi TCMS)
+    ['json', { outputFile: 'test-results/results.json' }],
+    // rapport technique Allure (steps, captures, historique)
+    ['allure-playwright', { resultsDir: 'allure-results', detail: true }],
   ],
   use: {
     actionTimeout: 15_000,
@@ -28,7 +33,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     ignoreHTTPSErrors: true,
-    extraHTTPHeaders: { Accept: 'application/json' },
+    extraHTTPHeaders: defaultApiHeaders(),
   },
   projects: [
     {

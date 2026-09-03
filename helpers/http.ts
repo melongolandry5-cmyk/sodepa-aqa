@@ -1,4 +1,21 @@
+import { randomUUID } from 'crypto';
 import { APIRequestContext, APIResponse } from '@playwright/test';
+
+/**
+ * En-tetes envoyes sur chaque appel API.
+ *
+ * Le backend impose un identifiant de correlation : sans `X-Correlation-Id`
+ * toute requete est rejetee en 400 (« Correlation Id header not provided »),
+ * avant meme la validation du corps. Un identifiant neuf par contexte HTTP
+ * permet de retrouver la trace serveur d'une execution.
+ */
+export function defaultApiHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    'X-Correlation-Id': randomUUID(),
+  };
+}
 
 export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 

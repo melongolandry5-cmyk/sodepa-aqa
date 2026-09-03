@@ -1,4 +1,5 @@
-import { APIRequestContext, APIResponse, expect } from '@playwright/test';
+import { APIRequestContext, APIResponse, expect, test } from '@playwright/test';
+import { attacher, corpsLisible, masquer } from './report';
 
 /** Options d'un appel HTTP. */
 export interface CallOptions {
@@ -26,42 +27,62 @@ export abstract class BaseApiClient {
   protected constructor(protected readonly request: APIRequestContext) {}
 
   async get(path: string, options: CallOptions = {}): Promise<APIResponse> {
-    const response = await this.request.get(path, {
-      params: options.params,
-      headers: options.headers,
-    });
-    await this.assertStatus(response, options.expectStatus);
-    return response;
+    return this.appel('get', path, options);
   }
 
   async post(path: string, options: CallOptions = {}): Promise<APIResponse> {
-    const response = await this.request.post(path, {
-      params: options.params,
-      data: options.data as never,
-      headers: options.headers,
-    });
-    await this.assertStatus(response, options.expectStatus);
-    return response;
+    return this.appel('post', path, options);
   }
 
   async put(path: string, options: CallOptions = {}): Promise<APIResponse> {
-    const response = await this.request.put(path, {
-      params: options.params,
-      data: options.data as never,
-      headers: options.headers,
-    });
-    await this.assertStatus(response, options.expectStatus);
-    return response;
+    return this.appel('put', path, options);
   }
 
   async delete(path: string, options: CallOptions = {}): Promise<APIResponse> {
-    const response = await this.request.delete(path, {
-      params: options.params,
-      headers: options.headers,
-    });
-    await this.assertStatus(response, options.expectStatus);
-    return response;
+    return this.appel('delete', path, options);
   }
+
+  /**
+   * Point de passage unique des appels HTTP.
+   *
+   * Chaque appel devient une etape du rapport, avec la requete envoyee et la
+   * reponse recue en piece jointe : le rapport Allure documente ainsi les
+   * donnees de test reellement echangees, y compris quand l'appel echoue.
+   */
+  private async appel(
+    methode: 'get' | 'post' | 'put' | 'delete',
+    path: string,
+    options: CallOptions,
+  ): Promise<APIResponse> {
+    return test.step(`${methode.toUpperCase()} ${path}`, async () => {
+      await attacher('requete', {
+        methode: methode.toUpperCase(),
+        chemin: path,
+        parametres: options.params,
+        corps: masquer(options.data),
+      });
+
+      const envoi = { params: options.params, headers: options.headers };
+      const response =
+        methode === 'get'
+          ? await this.request.get(path, envoi)
+          : methode === 'delete'
+            ? await this.request.delete(path, envoi)
+            : methode === 'put'
+              ? await this.request.put(path, { ...envoi, data: options.data as never })
+              : await this.request.post(path, { ...envoi, data: options.data as never });
+
+      await attacher('reponse', {
+        statut: response.status(),
+        url: response.url(),
+        corps: await corpsLisible(response),
+      });
+
+      await this.assertStatus(response, options.expectStatus);
+      return response;
+    });
+  }
+
 
   /** Lit le corps JSON d'une réponse en le typant. */
   async json<T>(response: APIResponse): Promise<T> {

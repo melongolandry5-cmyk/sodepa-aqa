@@ -1,5 +1,6 @@
 import { APIResponse, expect } from '@playwright/test';
 import { PageRecord } from '../api/types/common';
+import { attacherReponse } from './report';
 
 /**
  * Vérifie la cohérence interne d'une page renvoyée par le backend :
@@ -52,6 +53,7 @@ export async function expectStatusIn(
   allowed: number[],
   contexte = '',
 ): Promise<void> {
+  await attacherReponse(response);
   if (allowed.includes(response.status())) return;
   const body = await response.text();
   expect(
@@ -62,6 +64,7 @@ export async function expectStatusIn(
 
 /** Vérifie qu'une réponse n'est pas un succès (utile sur les cas d'erreur métier). */
 export async function expectNotOk(response: APIResponse, contexte = ''): Promise<void> {
+  await attacherReponse(response);
   if (!response.ok()) return;
   const body = await response.text();
   expect(
