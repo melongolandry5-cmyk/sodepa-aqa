@@ -1,8 +1,7 @@
 /**
  * Socle commun des scripts Squash TM.
  * ---------------------------------------------------------------------------
- * Meme philosophie que kiwi-lib.mjs : zero dependance npm, uniquement des
- * modules Node natifs.
+ * Zero dependance npm : uniquement des modules Node natifs.
  *
  * - lecture du .env
  * - client REST minimal (authentification Basic : mot de passe ou jeton d'API)

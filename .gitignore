@@ -7,11 +7,10 @@ playwright/.cache/
 .env
 *.log
 
-# Allure / Kiwi TCMS
+# Allure
 allure-results/
 allure-report/
 .allure/
-_kiwi-merge.zip
 
 # Squash TM
 squash-plan.json

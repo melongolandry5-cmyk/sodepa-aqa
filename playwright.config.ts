@@ -21,7 +21,7 @@ export default defineConfig({
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['junit', { outputFile: 'test-results/junit.xml' }],
-    // consomme par scripts/kiwi-report.mjs (push vers Kiwi TCMS)
+    // sortie lisible par une machine, pour un traitement externe des resultats
     ['json', { outputFile: 'test-results/results.json' }],
     // rapport technique Allure (steps, captures, historique)
     ['allure-playwright', { resultsDir: 'allure-results', detail: true }],

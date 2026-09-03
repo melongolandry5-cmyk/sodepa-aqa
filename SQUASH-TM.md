@@ -12,8 +12,8 @@ Squash TM ── Cas de test / Campagnes / Exigences
 Playwright ── projet « api » : 9 modules, 15 fichiers, 475 tests
 ```
 
-Le socle Kiwi TCMS existant n'est pas modifié : les deux intégrations
-cohabitent et lisent la même source, `playwright test --list`.
+La source du catalogue est `playwright test --list` : les cas de test ne sont
+jamais saisis à la main, ils sont déduits du dépôt.
 
 ---
 

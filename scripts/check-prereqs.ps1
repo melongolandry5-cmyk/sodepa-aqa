@@ -34,16 +34,6 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
     }
 }
 
-# Ports utilises par Kiwi TCMS
-foreach ($p in 8080, 8443) {
-    $busy = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
-    if ($busy) {
-        Write-Host "[ATTENTION] Le port $p est deja utilise (PID $($busy[0].OwningProcess)) — change-le dans kiwi/docker-compose.yml" -ForegroundColor Yellow
-    } else {
-        Write-Host "[OK]     Port $p libre" -ForegroundColor Green
-    }
-}
-
 Write-Host ""
 if ($ok) { Write-Host "Tout est pret. Etape suivante : voir README.md`n" -ForegroundColor Cyan }
 else     { Write-Host "Installe les elements marques [MANQUE], puis relance ce script.`n" -ForegroundColor Cyan }
