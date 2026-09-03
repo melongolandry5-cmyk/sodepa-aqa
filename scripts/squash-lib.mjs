@@ -82,6 +82,13 @@ export const CFG = {
   automationFields: (process.env.SQUASH_AUTOMATION_FIELDS || 'auto').toLowerCase(),
   technology: process.env.SQUASH_AUTOMATED_TECHNOLOGY || 'Playwright',
 
+  // Publication des resultats d'execution (scripts/squash-push-results.mjs).
+  campaign: process.env.SQUASH_CAMPAIGN || process.env.SQUASH_ROOT_FOLDER || 'Playwright API',
+  // Vide : le nom de l'iteration est derive de la branche, du commit et de l'heure.
+  iteration: process.env.SQUASH_ITERATION || '',
+  // URL du rapport Allure publie, reportee en commentaire de chaque execution.
+  allureUrl: process.env.SQUASH_ALLURE_URL || '',
+
   branch: process.env.SQUASH_BRANCH || git('rev-parse --abbrev-ref HEAD', 'local'),
   commit: git('rev-parse --short HEAD', ''),
   repoUrl: process.env.SQUASH_REPO_URL || git('config --get remote.origin.url', ''),
@@ -360,6 +367,14 @@ export function flattenSuites(suites, acc = [], titles = []) {
           file: (suite.file || spec.file || '').replace(/\\/g, '/'),
           line: spec.line || 0,
           project: t.projectName || '',
+          // Issue de l'execution : vide quand le JSON vient de `--list`.
+          // expected | unexpected | flaky | skipped
+          outcome: t.status || '',
+          attempts: (t.results || []).map((r) => ({
+            status: r.status || '',
+            duration: r.duration || 0,
+            error: (r.error && r.error.message) || '',
+          })),
         });
       }
     }
@@ -654,4 +669,104 @@ export function buildDescription(t, stepSource) {
 /** Reference technique du script automatise, au format fichier#test. */
 export function automatedReference(t) {
   return `${t.file}#${[...t.describes, t.title].join(' > ')}`.slice(0, 255);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Campagnes, iterations et executions                                        */
+/* -------------------------------------------------------------------------- */
+
+/** Origine des objets crees par la publication des resultats. */
+export const PUSHED_BY =
+  'Cree automatiquement depuis le depot Playwright (scripts/squash-push-results.mjs)';
+
+/**
+ * Issue Playwright -> statut d'execution Squash.
+ *
+ * Les statuts acceptes par l'API sont SUCCESS, FAILURE, BLOCKED, UNTESTABLE,
+ * SETTLED, READY et RUNNING ; toute autre valeur provoque un HTTP 500.
+ * Un test « flaky » a fini par passer : il compte comme un succes, et le
+ * commentaire de l'execution signale les tentatives.
+ */
+export const STATUT_SQUASH = {
+  expected: 'SUCCESS',
+  unexpected: 'FAILURE',
+  flaky: 'SUCCESS',
+  skipped: 'UNTESTABLE',
+};
+
+/** Renvoie la campagne `name` du projet, en la creant si besoin. */
+export async function ensureCampaign(name, projet, { dryRun = false } = {}) {
+  // La cle HAL de cette collection est `campaign-library-content` ; `apiAll`
+  // sait se rabattre si une version de Squash la nomme autrement.
+  const contenu = await apiAll(
+    `/projects/${projet.id}/campaigns-library/content`,
+    'campaign-library-content'
+  );
+  const existante = contenu.find(
+    (e) => e._type === 'campaign' && String(e.name).trim() === name.trim()
+  );
+  if (existante) return { campagne: { id: existante.id, name }, created: false };
+  if (dryRun) return { campagne: { id: `dry-${name}`, name }, created: true };
+
+  const creee = await api('POST', '/campaigns', {
+    _type: 'campaign',
+    name,
+    description: PUSHED_BY,
+    // Seuls `project` et `campaign-folder` sont acceptes comme parent.
+    parent: { _type: 'project', id: projet.id },
+  });
+  return { campagne: { id: creee.id, name }, created: true };
+}
+
+/** Cree une iteration sous la campagne. Une execution = une iteration. */
+export async function createIteration(campagneId, name, { dryRun = false } = {}) {
+  if (dryRun) return { id: `dry-${name}`, name };
+  const it = await api('POST', `/campaigns/${campagneId}/iterations`, {
+    _type: 'iteration',
+    name,
+    description: PUSHED_BY,
+  });
+  return { id: it.id, name };
+}
+
+/** Ajoute un cas au plan d'execution de l'iteration et renvoie l'item cree. */
+export async function addTestPlanItem(iterationId, testCaseId) {
+  const item = await api('POST', `/iterations/${iterationId}/test-plan`, {
+    _type: 'test-plan-item',
+    test_case: { _type: 'test-case', id: testCaseId },
+  });
+  return item.id;
+}
+
+/** Ouvre une execution sur un item du plan. Elle demarre au statut READY. */
+export async function createExecution(itemId) {
+  const ex = await api('POST', `/test-plan-items/${itemId}/executions`, {});
+  return ex.id;
+}
+
+/** Positionne le statut et le commentaire d'une execution. */
+export async function setExecutionResult(executionId, statut, commentaire) {
+  return api('PATCH', `/executions/${executionId}`, {
+    _type: 'execution',
+    execution_status: statut,
+    comment: commentaire,
+  });
+}
+
+/**
+ * Indexe les cas de test du projet par nom.
+ *
+ * Le nom est le seul lien fiable avec le depot : la reference est renumerotee
+ * par `squash-renumber-ids.mjs` et `automated_test_reference` reste vide quand
+ * l'instance refuse les champs d'automatisation.
+ */
+export async function indexTestCasesByName(projetId) {
+  const tous = await apiAll('/test-cases', 'test-cases');
+  const index = new Map();
+  for (const c of tous) {
+    if (projetId && c.project && c.project.id && c.project.id !== projetId) continue;
+    const cle = String(c.name).trim();
+    if (!index.has(cle)) index.set(cle, { id: c.id, reference: c.reference || '' });
+  }
+  return index;
 }

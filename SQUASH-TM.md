@@ -194,3 +194,64 @@ Pour repartir de zéro sur un module : supprimer son dossier dans Squash
 
 Pour tout reprendre : supprimer le dossier `Playwright API` et relancer
 `npm run squash:sync`.
+
+---
+
+## 8. Publication des résultats d'exécution
+
+`squash:sync` pousse le **catalogue** des cas. `squash:push` pousse ce qu'une
+campagne a **donné**, refermant la chaîne :
+
+```
+npx playwright test ──> allure-report/index.html ──> Squash TM
+     (résultats)          (rapport partageable)      (exécutions)
+```
+
+En une commande : `.\scripts\run-qa.ps1 -Project api`
+
+### Ce que le script crée
+
+```
+Projet « erp sodepa »
+└── Campagne « Playwright API »          <- SQUASH_CAMPAIGN, créée une fois
+    └── Itération « main a1b2c3d - ... » <- une par exécution
+        └── 14 items de plan
+            └── 1 exécution chacun, avec statut et commentaire
+```
+
+Le commentaire porte le module, le fichier et la ligne, le projet Playwright,
+la durée, le nombre de tentatives, le commit, l'erreur en cas d'échec, et le
+lien vers le rapport Allure si `SQUASH_ALLURE_URL` est renseigné.
+
+### Correspondance des statuts
+
+| Playwright   | Squash       |
+| ------------ | ------------ |
+| `expected`   | `SUCCESS`    |
+| `unexpected` | `FAILURE`    |
+| `flaky`      | `SUCCESS`    |
+| `skipped`    | `UNTESTABLE` |
+
+Un test instable compte comme un succès : il a fini par passer. Le commentaire
+signale les tentatives, pour que l'instabilité reste visible.
+
+### Rapprochement avec les cas
+
+Le lien entre un résultat et un cas Squash se fait **par le nom du cas**. Ni la
+référence (renumérotée par `squash:renumber`) ni `automated_test_reference`
+(vide quand l'instance refuse les champs d'automatisation) ne sont fiables.
+
+Un test sans cas correspondant est signalé comme orphelin et ignoré : lancer
+`npm run squash:sync` d'abord.
+
+### Commandes
+
+```powershell
+npm run squash:push:check   # vérifie la connexion et le rapprochement
+npm run squash:push:dry     # affiche ce qui serait publié, sans rien écrire
+npm run squash:push         # publie
+```
+
+La source est `test-results/results.json`, produit par le reporter `json`. Un
+fichier issu d'un `playwright test --list` ne contient aucune issue : le script
+le détecte et refuse de publier plutôt que de remonter des résultats vides.
