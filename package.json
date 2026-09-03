@@ -12,11 +12,20 @@
     "codegen": "playwright codegen",
     "report": "playwright show-report",
     "typecheck": "tsc --noEmit",
-    "install:browsers": "playwright install --with-deps chromium"
+    "install:browsers": "playwright install --with-deps chromium",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report",
+    "allure:serve": "allure serve allure-results",
+    "kiwi:push": "node scripts/kiwi-report.mjs",
+    "kiwi:dry": "node scripts/kiwi-report.mjs --dry-run",
+    "kiwi:check": "node scripts/kiwi-report.mjs --check",
+    "kiwi:sync": "node scripts/kiwi-sync-cases.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.10.0",
+    "allure-commandline": "^2.34.0",
+    "allure-playwright": "^3.0.0",
     "dotenv": "^16.4.7",
     "typescript": "^5.7.2"
   }

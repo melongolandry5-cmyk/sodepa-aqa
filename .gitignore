@@ -6,3 +6,9 @@ playwright/.cache/
 .auth/
 .env
 *.log
+
+# Allure / Kiwi TCMS
+allure-results/
+allure-report/
+.allure/
+_kiwi-merge.zip
